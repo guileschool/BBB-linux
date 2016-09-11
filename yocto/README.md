@@ -3,6 +3,10 @@ Beaglebone yocto-project
 
 [https://www.yoctoproject.org](https://www.yoctoproject.org)
 
+[youtube:비글본(beaglebone) 기반의 욕토(YOCTO) 이미지 만들기](https://youtu.be/U8a3Yh-OIfQ?list=PLStpXMov8iUJKrM48U3Z4i3gEj54uazML)
+
+[Intel:Getting started with yocto project](http://d.pr/v/1hLPs/4fgFcAwr+)
+
 ```
 욕토 이미지 다운로드
 $ git clone -b fido git://git.yoctoproject.org/poky.git
