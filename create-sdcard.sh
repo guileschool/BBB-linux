@@ -36,10 +36,6 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Force locale language to be set to English. This avoids issues when doing
-# text and string processing.
-export LANG=C
-
 # Determine the absolute path to the executable
 # EXE will have the PWD removed so we can concatenate with the PWD safely
 PWD=`pwd`
@@ -68,9 +64,9 @@ EOM
 AMIROOT=`whoami | awk {'print $1'}`
 if [ "$AMIROOT" != "root" ] ; then
 
-	echo "	**** Error *** must run script with sudo"
-	echo ""
-	exit
+    echo "  **** Error *** must run script with sudo"
+    echo ""
+    exit
 fi
 
 THEPWD=$EXEPATH
@@ -88,21 +84,22 @@ untar_progress ()
     TARBALL=$1;
     DIRECTPATH=$2;
     BLOCKING_FACTOR=$(($(gzip --list ${TARBALL} | sed -n -e "s/.*[[:space:]]\+[0-9]\+[[:space:]]\+\([0-9]\+\)[[:space:]].*$/\1/p") / 51200 + 1));
-    tar --no-same-owner --blocking-factor=${BLOCKING_FACTOR} --checkpoint=1 --checkpoint-action='ttyout=Written %u%  \r' -zxf ${TARBALL} -C ${DIRECTPATH}
+    tar --blocking-factor=${BLOCKING_FACTOR} --checkpoint=1 --checkpoint-action='ttyout=Written %u%  \r' -zxf ${TARBALL} -C ${DIRECTPATH}
 }
 
 #copy/paste programs
 cp_progress ()
 {
-	CURRENTSIZE=0
-	while [ $CURRENTSIZE -lt $TOTALSIZE ]
-	do
-		TOTALSIZE=$1;
-		TOHERE=$2;
-		CURRENTSIZE=`sudo du -c $TOHERE | grep total | awk {'print $1'}`
-		echo -e -n "$CURRENTSIZE /  $TOTALSIZE copied \r"
-		sleep 1
-	done
+    CURRENTSIZE=0
+    TOTALSIZE=$1
+    while [ $CURRENTSIZE -lt $TOTALSIZE ]
+    do
+        TOTALSIZE=$1;
+        TOHERE=$2;
+        CURRENTSIZE=`sudo du -c $TOHERE | grep total | awk {'print $1'}`
+        echo -e -n "$CURRENTSIZE /  $TOTALSIZE copied \r"
+        sleep 1
+    done
 }
 
 check_for_sdcards()
@@ -111,44 +108,44 @@ check_for_sdcards()
         ROOTDRIVE=`mount | grep 'on / ' | awk {'print $1'} |  cut -c6-8`
         PARTITION_TEST=`cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n ''`
         if [ "$PARTITION_TEST" = "" ]; then
-	        echo -e "Please insert a SD card to continue\n"
-	        while [ "$PARTITION_TEST" = "" ]; do
-		        read -p "Type 'y' to re-detect the SD card or 'n' to exit the script: " REPLY
-		        if [ "$REPLY" = 'n' ]; then
-		            exit 1
-		        fi
-		        ROOTDRIVE=`mount | grep 'on / ' | awk {'print $1'} |  cut -c6-8`
-		        PARTITION_TEST=`cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n ''`
-	        done
+            echo -e "Please insert a SD card to continue\n"
+            while [ "$PARTITION_TEST" = "" ]; do
+                read -p "Type 'y' to re-detect the SD card or 'n' to exit the script: " REPLY
+                if [ "$REPLY" = 'n' ]; then
+                    exit 1
+                fi
+                ROOTDRIVE=`mount | grep 'on / ' | awk {'print $1'} |  cut -c6-8`
+                PARTITION_TEST=`cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n ''`
+            done
         fi
 }
 
 populate_3_partitions() {
     ENTERCORRECTLY="0"
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
-		read -e -p 'Enter path where SD card tarballs were downloaded : '  TARBALLPATH
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
+        read -e -p 'Enter path where SD card tarballs were downloaded : '  TARBALLPATH
 
-		echo ""
-		ENTERCORRECTLY=1
-		if [ -d $TARBALLPATH ]
-		then
-			echo "Directory exists"
-			echo ""
-			echo "This directory contains:"
-			ls $TARBALLPATH
-			echo ""
-			read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
-				case $ISRIGHTPATH in
-				"y" | "Y") ;;
-				"n" | "N" ) ENTERCORRECTLY=0;continue;;
-				*)  echo "Please enter y or n";ENTERCORRECTLY=0;continue;;
-				esac
-		else
-			echo "Invalid path make sure to include complete path"
-			ENTERCORRECTLY=0
+        echo ""
+        ENTERCORRECTLY=1
+        if [ -d $TARBALLPATH ]
+        then
+            echo "Directory exists"
+            echo ""
+            echo "This directory contains:"
+            ls $TARBALLPATH
+            echo ""
+            read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
+                case $ISRIGHTPATH in
+                "y" | "Y") ;;
+                "n" | "N" ) ENTERCORRECTLY=0;continue;;
+                *)  echo "Please enter y or n";ENTERCORRECTLY=0;continue;;
+                esac
+        else
+            echo "Invalid path make sure to include complete path"
+            ENTERCORRECTLY=0
             continue
-		fi
+        fi
         # Check that tarballs were found
         if [ ! -e "$TARBALLPATH""/boot_partition.tar.gz" ]
         then
@@ -173,7 +170,7 @@ populate_3_partitions() {
             ENTERCORRECTLY=0
             continue
         fi
-	done
+    done
 
         # Make temporary directories and untar mount the partitions
         mkdir $PWD/boot
@@ -269,8 +266,6 @@ else
     ROOTDRIVE=`echo $ROOTDRIVE | cut -c1-3`
 fi
 
-echo ROOTDRIVE=$ROOTDRIVE
-
 PARTITION_TEST=`cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n ''`
 
 # Check for available mounts
@@ -284,8 +279,8 @@ echo " "
 DEVICEDRIVENUMBER=
 while true;
 do
-	read -p 'Enter Device Number or 'n' to exit: ' DEVICEDRIVENUMBER
-	echo " "
+    read -p 'Enter Device Number or 'n' to exit: ' DEVICEDRIVENUMBER
+    echo " "
         if [ "$DEVICEDRIVENUMBER" = 'n' ]; then
                 exit 1
         fi
@@ -299,24 +294,22 @@ do
                 echo " "
                continue
         fi
-
-	#DEVICEDRIVENAME=`cat /proc/partitions | grep -v 'sda' | grep '\<sd.\>\|\<mmcblk.\>' | grep -n '' | grep "${DEVICEDRIVENUMBER}:" | awk '{print $5}'`
-	DEVICEDRIVENAME=`cat /proc/partitions | grep '\<sd.\>\|\<mmcblk.\>' | grep -n '' | grep "${DEVICEDRIVENUMBER}:" | awk '{print $5}'`
-	echo DEVICEDRIVENAME=${DEVICEDRIVENAME}
-	if [ -n "$DEVICEDRIVENAME" ]
-	then
-	        DRIVE=/dev/$DEVICEDRIVENAME
-	        DEVICESIZE=`cat /proc/partitions | grep -v 'sda' | grep '\<sd.\>\|\<mmcblk.\>' | grep -n '' | grep "${DEVICEDRIVENUMBER}:" | awk '{print $4}'`
-		break
-	else
-		echo -e "Invalid selection!"
+# in following lines I've changed grep -v 'sda' to grep -v $ROOTDRIVE so that later grep "${DEVICEDRIVENUMBER}:" matches the menu given earlier
+    DEVICEDRIVENAME=`cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n '' | grep "${DEVICEDRIVENUMBER}:" | awk '{print $5}'`
+    if [ -n "$DEVICEDRIVENAME" ]
+    then
+            DRIVE=/dev/$DEVICEDRIVENAME
+            DEVICESIZE=`cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n '' | grep "${DEVICEDRIVENUMBER}:" | awk '{print $4}'`
+        break
+    else
+        echo -e "Invalid selection!"
                 # Check to see if there are any changes
                 check_for_sdcards
                 echo -e "These are the only Drives available to write images to: \n"
                 echo "#  major   minor    size   name "
                 cat /proc/partitions | grep -v $ROOTDRIVE | grep '\<sd.\>\|\<mmcblk.\>' | grep -n ''
                 echo " "
-	fi
+    fi
 done
 
 echo "$DEVICEDRIVENAME was selected"
@@ -326,29 +319,29 @@ cat << EOM
 
 ################################################################################
 
-		**********WARNING**********
+        **********WARNING**********
 
-	Selected Device is greater then 16GB
-	Continuing past this point will erase data from device
-	Double check that this is the correct SD Card
+    Selected Device is greater then 16GB
+    Continuing past this point will erase data from device
+    Double check that this is the correct SD Card
 
 ################################################################################
 
 EOM
-	ENTERCORRECTLY=0
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
-		read -p 'Would you like to continue [y/n] : ' SIZECHECK
-		echo ""
-		echo " "
-		ENTERCORRECTLY=1
-		case $SIZECHECK in
-		"y")  ;;
-		"n")  exit;;
-		*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-		esac
-		echo ""
-	done
+    ENTERCORRECTLY=0
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
+        read -p 'Would you like to continue [y/n] : ' SIZECHECK
+        echo ""
+        echo " "
+        ENTERCORRECTLY=1
+        case $SIZECHECK in
+        "y")  ;;
+        "n")  exit;;
+        *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+        esac
+        echo ""
+    done
 
 fi
 echo ""
@@ -360,11 +353,11 @@ NUM_OF_DRIVES=`df | grep -c $DEVICEDRIVENAME`
 # If it is mmcblkX, then we need to set an extra char in the partition names, 'p',
 # to account for /dev/mmcblkXpY labled partitions.
 if [[ ${DEVICEDRIVENAME} =~ ^sd. ]]; then
-	echo "$DRIVE is an sdx device"
-	P=''
+    echo "$DRIVE is an sdx device"
+    P=''
 else
-	echo "$DRIVE is an mmcblkx device"
-	P='p'
+    echo "$DRIVE is an mmcblkx device"
+    P='p'
 fi
 
 if [ "$NUM_OF_DRIVES" != "0" ]; then
@@ -393,34 +386,34 @@ done
 # check to see if the device is already partitioned
 for ((  c=1; c<5; c++ ))
 do
-	eval "SIZE$c=`cat /proc/partitions | grep -v 'sda' | grep '\<'$DEVICEDRIVENAME$P$c'\>'  | awk '{print $3}'`"
+    eval "SIZE$c=`cat /proc/partitions | grep -v 'sda' | grep '\<'$DEVICEDRIVENAME$P$c'\>'  | awk '{print $3}'`"
 done
 
 PARTITION="0"
 if [ -n "$SIZE1" -a -n "$SIZE2" ] ; then
-	if  [ "$SIZE1" -gt "72000" -a "$SIZE2" -gt "700000" ]
-	then
-		PARTITION=1
+    if  [ "$SIZE1" -gt "72000" -a "$SIZE2" -gt "700000" ]
+    then
+        PARTITION=1
 
-		if [ -z "$SIZE3" -a -z "$SIZE4" ]
-		then
-			#Detected 2 partitions
-			PARTS=2
+        if [ -z "$SIZE3" -a -z "$SIZE4" ]
+        then
+            #Detected 2 partitions
+            PARTS=2
 
-		elif [ "$SIZE3" -gt "1000" -a -z "$SIZE4" ]
-		then
-			#Detected 3 partitions
-			PARTS=3
+        elif [ "$SIZE3" -gt "1000" -a -z "$SIZE4" ]
+        then
+            #Detected 3 partitions
+            PARTS=3
 
-		else
-			echo "SD Card is not correctly partitioned"
-			PARTITION=0
-		fi
-	fi
+        else
+            echo "SD Card is not correctly partitioned"
+            PARTITION=0
+        fi
+    fi
 else
-	echo "SD Card is not correctly partitioned"
-	PARTITION=0
-	PARTS=0
+    echo "SD Card is not correctly partitioned"
+    PARTITION=0
+    PARTS=0
 fi
 
 
@@ -439,20 +432,20 @@ cat << EOM
 
 EOM
 
-	ENTERCORRECTLY=0
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
-		read -p 'Would you like to re-partition the drive anyways [y/n] : ' CASEPARTITION
-		echo ""
-		echo " "
-		ENTERCORRECTLY=1
-		case $CASEPARTITION in
-		"y")  echo "Now partitioning $DEVICEDRIVENAME ...";PARTITION=0;;
-		"n")  echo "Skipping partitioning";;
-		*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-		esac
-		echo ""
-	done
+    ENTERCORRECTLY=0
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
+        read -p 'Would you like to re-partition the drive anyways [y/n] : ' CASEPARTITION
+        echo ""
+        echo " "
+        ENTERCORRECTLY=1
+        case $CASEPARTITION in
+        "y")  echo "Now partitioning $DEVICEDRIVENAME ...";PARTITION=0;;
+        "n")  echo "Skipping partitioning";;
+        *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+        esac
+        echo ""
+    done
 
 fi
 
@@ -463,31 +456,31 @@ cat << EOM
 
 ################################################################################
 
-	Select 2 partitions if only need boot and rootfs (most users)
-	Select 3 partitions if need SDK & CCS on SD card.  This is usually used
+    Select 2 partitions if only need boot and rootfs (most users)
+    Select 3 partitions if need SDK & CCS on SD card.  This is usually used
         by device manufacturers with access to partition tarballs.
 
-	****WARNING**** continuing will erase all data on $DEVICEDRIVENAME
+    ****WARNING**** continuing will erase all data on $DEVICEDRIVENAME
 
 ################################################################################
 
 EOM
-	ENTERCORRECTLY=0
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
+    ENTERCORRECTLY=0
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
 
-		read -p 'Number of partitions needed [2/3] : ' CASEPARTITIONNUMBER
-		echo ""
-		echo " "
-		ENTERCORRECTLY=1
-		case $CASEPARTITIONNUMBER in
-		"2")  echo "Now partitioning $DEVICEDRIVENAME with 2 partitions...";PARTITION=2;;
-		"3")  echo "Now partitioning $DEVICEDRIVENAME with 3 partitions...";PARTITION=3;;
-		"n")  exit;;
-		*)  echo "Please enter 2 or 3";ENTERCORRECTLY=0;;
-		esac
-		echo " "
-	done
+        read -p 'Number of partitions needed [2/3] : ' CASEPARTITIONNUMBER
+        echo ""
+        echo " "
+        ENTERCORRECTLY=1
+        case $CASEPARTITIONNUMBER in
+        "2")  echo "Now partitioning $DEVICEDRIVENAME with 2 partitions...";PARTITION=2;;
+        "3")  echo "Now partitioning $DEVICEDRIVENAME with 3 partitions...";PARTITION=3;;
+        "n")  exit;;
+        *)  echo "Please enter 2 or 3";ENTERCORRECTLY=0;;
+        esac
+        echo " "
+    done
 fi
 
 
@@ -505,7 +498,7 @@ cat << EOM
 
 ################################################################################
 
-		Now making 3 partitions
+        Now making 3 partitions
 
 ################################################################################
 
@@ -529,31 +522,31 @@ cat << EOM
 
 ################################################################################
 
-		Partitioning Boot
+        Partitioning Boot
 
 ################################################################################
 EOM
-	mkfs.vfat -F 32 -n "boot" ${DRIVE}${P}1
+    mkfs.vfat -F 32 -n "boot" ${DRIVE}${P}1
 cat << EOM
 
 ################################################################################
 
-		Partitioning Rootfs
+        Partitioning Rootfs
 
 ################################################################################
 EOM
-	mkfs.ext3 -L "rootfs" ${DRIVE}${P}2
+    mkfs.ext3 -L "rootfs" ${DRIVE}${P}2
 cat << EOM
 
 ################################################################################
 
-		Partitioning START_HERE
+        Partitioning START_HERE
 
 ################################################################################
 EOM
-	mkfs.ext3 -L "START_HERE" ${DRIVE}${P}3
-	sync
-	sync
+    mkfs.ext3 -L "START_HERE" ${DRIVE}${P}3
+    sync
+    sync
 
 #create only 2 partitions
 elif [ "$PARTITION" -eq "2" ]
@@ -565,7 +558,7 @@ cat << EOM
 
 ################################################################################
 
-		Now making 2 partitions
+        Now making 2 partitions
 
 ################################################################################
 
@@ -587,23 +580,23 @@ cat << EOM
 
 ################################################################################
 
-		Partitioning Boot
+        Partitioning Boot
 
 ################################################################################
 EOM
-	mkfs.vfat -F 32 -n "boot" ${DRIVE}${P}1
+    mkfs.vfat -F 32 -n "boot" ${DRIVE}${P}1
 cat << EOM
 
 ################################################################################
 
-		Partitioning rootfs
+        Partitioning rootfs
 
 ################################################################################
 EOM
-	mkfs.ext3 -L "rootfs" ${DRIVE}${P}2
-	sync
-	sync
-	INSTALLSTARTHERE=n
+    mkfs.ext3 -L "rootfs" ${DRIVE}${P}2
+    sync
+    sync
+    INSTALLSTARTHERE=n
 fi
 
 
@@ -626,15 +619,15 @@ EOM
 ENTERCORRECTLY=0
 while [ $ENTERCORRECTLY -ne 1 ]
 do
-	read -p 'Would you like to continue? [y/n] : ' EXITQ
-	echo ""
-	echo " "
-	ENTERCORRECTLY=1
-	case $EXITQ in
-	"y") ;;
-	"n") exit;;
-	*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-	esac
+    read -p 'Would you like to continue? [y/n] : ' EXITQ
+    echo ""
+    echo " "
+    ENTERCORRECTLY=1
+    case $EXITQ in
+    "y") ;;
+    "n") exit;;
+    *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+    esac
 done
 
 # If this is a three partition card then we will jump to a function to
@@ -680,10 +673,10 @@ sync
 cat << EOM
 ################################################################################
 
-	Choose file path to install from
+    Choose file path to install from
 
-	1 ) Install pre-built images from SDK
-	2 ) Enter in custom boot and rootfs file paths
+    1 ) Install pre-built images from SDK
+    2 ) Enter in custom boot and rootfs file paths
 
 ################################################################################
 
@@ -691,89 +684,89 @@ EOM
 ENTERCORRECTLY=0
 while [ $ENTERCORRECTLY -ne 1 ]
 do
-	read -p 'Choose now [1/2] : ' FILEPATHOPTION
-	echo ""
-	echo " "
-	ENTERCORRECTLY=1
-	case $FILEPATHOPTION in
-	"1") echo "Will now install from SDK pre-built images";;
-	"2") echo "";;
-	*)  echo "Please enter 1 or 2";ENTERCORRECTLY=0;;
-	esac
+    read -p 'Choose now [1/2] : ' FILEPATHOPTION
+    echo ""
+    echo " "
+    ENTERCORRECTLY=1
+    case $FILEPATHOPTION in
+    "1") echo "Will now install from SDK pre-built images";;
+    "2") echo "";;
+    *)  echo "Please enter 1 or 2";ENTERCORRECTLY=0;;
+    esac
 done
 
 # SDK DEFAULTS
 if [ $FILEPATHOPTION -eq 1 ] ; then
 
-	#check that in the right directory
+    #check that in the right directory
 
-	THEEVMSDK=`echo $PARSEPATH | grep -o 'ti-sdk-.*[0-9]'`
+    THEEVMSDK=`echo $PARSEPATH | grep -o 'ti-sdk-.*[0-9]'`
 
-	if [ $PATHVALID -eq 1 ]; then
-	echo "now installing:  $THEEVMSDK"
-	else
-	echo "no SDK PATH found"
-	ENTERCORRECTLY=0
-		while [ $ENTERCORRECTLY -ne 1 ]
-		do
-			read -e -p 'Enter path to SDK : '  SDKFILEPATH
+    if [ $PATHVALID -eq 1 ]; then
+    echo "now installing:  $THEEVMSDK"
+    else
+    echo "no SDK PATH found"
+    ENTERCORRECTLY=0
+        while [ $ENTERCORRECTLY -ne 1 ]
+        do
+            read -e -p 'Enter path to SDK : '  SDKFILEPATH
 
-			echo ""
-			ENTERCORRECTLY=1
-			if [ -d $SDKFILEPATH ]
-			then
-				echo "Directory exists"
-				echo ""
-				PARSEPATH=`echo $SDKFILEPATH | grep -o '.*ti-sdk.*.[0-9]/'`
-				#echo $PARSEPATH
+            echo ""
+            ENTERCORRECTLY=1
+            if [ -d $SDKFILEPATH ]
+            then
+                echo "Directory exists"
+                echo ""
+                PARSEPATH=`echo $SDKFILEPATH | grep -o '.*ti-sdk.*.[0-9]/'`
+                #echo $PARSEPATH
 
-				if [ "$PARSEPATH" != "" ] ; then
-				PATHVALID=1
-				else
-				PATHVALID=0
-				fi
-				#echo $PATHVALID
-				if [ $PATHVALID -eq 1 ] ; then
+                if [ "$PARSEPATH" != "" ] ; then
+                PATHVALID=1
+                else
+                PATHVALID=0
+                fi
+                #echo $PATHVALID
+                if [ $PATHVALID -eq 1 ] ; then
 
-				THEEVMSDK=`echo $SDKFILEPATH | grep -o 'ti-sdk-.*[0-9]'`
-				echo "Is this the correct SDK: $THEEVMSDK"
-				echo ""
-				read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
-					case $ISRIGHTPATH in
-					"y") ;;
-					"n") ENTERCORRECTLY=0;;
-					*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-					esac
-				else
-				echo "Invalid SDK path make sure to include ti-sdk-xxxx"
-				ENTERCORRECTLY=0
-				fi
+                THEEVMSDK=`echo $SDKFILEPATH | grep -o 'ti-sdk-.*[0-9]'`
+                echo "Is this the correct SDK: $THEEVMSDK"
+                echo ""
+                read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
+                    case $ISRIGHTPATH in
+                    "y") ;;
+                    "n") ENTERCORRECTLY=0;;
+                    *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+                    esac
+                else
+                echo "Invalid SDK path make sure to include ti-sdk-xxxx"
+                ENTERCORRECTLY=0
+                fi
 
-			else
-				echo "Invalid path make sure to include complete path"
+            else
+                echo "Invalid path make sure to include complete path"
 
-				ENTERCORRECTLY=0
-			fi
-		done
-	fi
+                ENTERCORRECTLY=0
+            fi
+        done
+    fi
 
 
 
-	#check that files are in SDK
-	BOOTFILEPATH="$PARSEPATH/board-support/prebuilt-images"
-	MLO=`ls $BOOTFILEPATH | grep MLO | awk {'print $1'}`
-	KERNELIMAGE=`ls $BOOTFILEPATH | grep [uz]Image | awk {'print $1'}`
-	BOOTIMG=`ls $BOOTFILEPATH | grep u-boot | grep .img | awk {'print $1'}`
-	BOOTBIN=`ls $BOOTFILEPATH | grep u-boot | grep .bin | awk {'print $1'}`
-	BOOTUENV=`ls $BOOTFILEPATH | grep uEnv.txt | awk {'print $1'}`
-	#rootfs
-	ROOTFILEPARTH="$PARSEPATH/filesystem"
-	#ROOTFSTAR=`ls  $ROOTFILEPARTH | grep tisdk-rootfs | awk {'print $1'}`
+    #check that files are in SDK
+    BOOTFILEPATH="$PARSEPATH/board-support/prebuilt-images"
+    MLO=`ls $BOOTFILEPATH | grep MLO | awk {'print $1'}`
+    KERNELIMAGE=`ls $BOOTFILEPATH | grep [uz]Image | awk {'print $1'}`
+    BOOTIMG=`ls $BOOTFILEPATH | grep u-boot | grep .img | awk {'print $1'}`
+    BOOTBIN=`ls $BOOTFILEPATH | grep u-boot | grep .bin | awk {'print $1'}`
+    BOOTUENV=`ls $BOOTFILEPATH | grep uEnv.txt | awk {'print $1'}`
+    #rootfs
+    ROOTFILEPARTH="$PARSEPATH/filesystem"
+    #ROOTFSTAR=`ls  $ROOTFILEPARTH | grep tisdk-rootfs | awk {'print $1'}`
 
-	#Make sure there is only 1 tar
-	CHECKNUMOFTAR=`ls $ROOTFILEPARTH | grep "tisdk-rootfs" | grep 'tar.gz' | grep -n '' | grep '2:' | awk {'print $1'}`
-	if [ -n "$CHECKNUMOFTAR" ]
-	then
+    #Make sure there is only 1 tar
+    CHECKNUMOFTAR=`ls $ROOTFILEPARTH | grep "tisdk-rootfs" | grep 'tar.gz' | grep -n '' | grep '2:' | awk {'print $1'}`
+    if [ -n "$CHECKNUMOFTAR" ]
+    then
 cat << EOM
 
 ################################################################################
@@ -783,20 +776,20 @@ cat << EOM
 ################################################################################
 
 EOM
-		ls $ROOTFILEPARTH | grep "tisdk-rootfs" | grep 'tar.gz' | grep -n '' | awk {'print "	" , $1'}
-		echo ""
-		read -p "Enter Number of rootfs Tarball: " TARNUMBER
-		echo " "
-		FOUNDTARFILENAME=`ls $ROOTFILEPARTH | grep "rootfs" | grep 'tar.gz' | grep -n '' | grep "${TARNUMBER}:" | cut -c3- | awk {'print$1'}`
-		ROOTFSTAR=$FOUNDTARFILENAME
+        ls $ROOTFILEPARTH | grep "tisdk-rootfs" | grep 'tar.gz' | grep -n '' | awk {'print "    " , $1'}
+        echo ""
+        read -p "Enter Number of rootfs Tarball: " TARNUMBER
+        echo " "
+        FOUNDTARFILENAME=`ls $ROOTFILEPARTH | grep "rootfs" | grep 'tar.gz' | grep -n '' | grep "${TARNUMBER}:" | cut -c3- | awk {'print$1'}`
+        ROOTFSTAR=$FOUNDTARFILENAME
 
-	else
-		ROOTFSTAR=`ls  $ROOTFILEPARTH | grep "tisdk-rootfs" | grep 'tar.gz' | awk {'print $1'}`
-	fi
+    else
+        ROOTFSTAR=`ls  $ROOTFILEPARTH | grep "tisdk-rootfs" | grep 'tar.gz' | awk {'print $1'}`
+    fi
 
-	ROOTFSUSERFILEPATH=$ROOTFILEPARTH/$ROOTFSTAR
-	BOOTPATHOPTION=1
-	ROOTFSPATHOPTION=2
+    ROOTFSUSERFILEPATH=$ROOTFILEPARTH/$ROOTFSTAR
+    BOOTPATHOPTION=1
+    ROOTFSPATHOPTION=2
 
 elif [ $FILEPATHOPTION -eq 2  ] ; then
 cat << EOM
@@ -819,36 +812,36 @@ cat << EOM
 ################################################################################
 
 EOM
-	ENTERCORRECTLY=0
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
-		read -e -p 'Enter path for Boot Partition : '  BOOTUSERFILEPATH
+    ENTERCORRECTLY=0
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
+        read -e -p 'Enter path for Boot Partition : '  BOOTUSERFILEPATH
 
-		echo ""
-		ENTERCORRECTLY=1
-		if [ -f $BOOTUSERFILEPATH ]
-		then
-			echo "File exists"
-			echo ""
-		elif [ -d $BOOTUSERFILEPATH ]
-		then
-			echo "Directory exists"
-			echo ""
-			echo "This directory contains:"
-			ls $BOOTUSERFILEPATH
-			echo ""
-			read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
-				case $ISRIGHTPATH in
-				"y") ;;
-				"n") ENTERCORRECTLY=0;;
-				*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-				esac
-		else
-			echo "Invalid path make sure to include complete path"
+        echo ""
+        ENTERCORRECTLY=1
+        if [ -f $BOOTUSERFILEPATH ]
+        then
+            echo "File exists"
+            echo ""
+        elif [ -d $BOOTUSERFILEPATH ]
+        then
+            echo "Directory exists"
+            echo ""
+            echo "This directory contains:"
+            ls $BOOTUSERFILEPATH
+            echo ""
+            read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
+                case $ISRIGHTPATH in
+                "y") ;;
+                "n") ENTERCORRECTLY=0;;
+                *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+                esac
+        else
+            echo "Invalid path make sure to include complete path"
 
-			ENTERCORRECTLY=0
-		fi
-	done
+            ENTERCORRECTLY=0
+        fi
+    done
 
 
 cat << EOM
@@ -871,17 +864,17 @@ ENTERCORRECTLY=0
 while [ $ENTERCORRECTLY -ne 1 ]
 do
 
-	read -p 'Choose option 1 or 2 : ' CASEOPTION
-	echo ""
-	echo " "
-	ENTERCORRECTLY=1
-	case $CASEOPTION in
-		"1")  echo "Reusing kernel and dt files from the rootfs's boot directory";KERNELFILESOPTION=1;;
-		"2")  echo "Choosing a directory that contains the kernel files to be used";KERNELFILESOPTION=2;;
-		"n")  exit;;
-		*)  echo "Please enter 1 or 2";ENTERCORRECTLY=0;;
-	esac
-	echo " "
+    read -p 'Choose option 1 or 2 : ' CASEOPTION
+    echo ""
+    echo " "
+    ENTERCORRECTLY=1
+    case $CASEOPTION in
+        "1")  echo "Reusing kernel and dt files from the rootfs's boot directory";KERNELFILESOPTION=1;;
+        "2")  echo "Choosing a directory that contains the kernel files to be used";KERNELFILESOPTION=2;;
+        "n")  exit;;
+        *)  echo "Please enter 1 or 2";ENTERCORRECTLY=0;;
+    esac
+    echo " "
 done
 
 if [ $KERNELFILESOPTION == 2 ]
@@ -902,32 +895,32 @@ cat << EOM
 ################################################################################
 
 EOM
-	ENTERCORRECTLY=0
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
-		read -e -p 'Enter path for kernel image and device tree files : '  KERNELUSERFILEPATH
+    ENTERCORRECTLY=0
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
+        read -e -p 'Enter path for kernel image and device tree files : '  KERNELUSERFILEPATH
 
-		echo ""
-		ENTERCORRECTLY=1
+        echo ""
+        ENTERCORRECTLY=1
 
-		if [ -d $KERNELUSERFILEPATH ]
-		then
-			echo "Directory exists"
-			echo ""
-			echo "This directory contains:"
-			ls $KERNELUSERFILEPATH
-			echo ""
-			read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
-			case $ISRIGHTPATH in
-				"y") ;;
-				"n") ENTERCORRECTLY=0;;
-				*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-				esac
-		else
-			echo "Invalid path make sure to include complete path"
-			ENTERCORRECTLY=0
-		fi
-	done
+        if [ -d $KERNELUSERFILEPATH ]
+        then
+            echo "Directory exists"
+            echo ""
+            echo "This directory contains:"
+            ls $KERNELUSERFILEPATH
+            echo ""
+            read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
+            case $ISRIGHTPATH in
+                "y") ;;
+                "n") ENTERCORRECTLY=0;;
+                *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+                esac
+        else
+            echo "Invalid path make sure to include complete path"
+            ENTERCORRECTLY=0
+        fi
+    done
 fi
 
 cat << EOM
@@ -946,74 +939,74 @@ cat << EOM
 ################################################################################
 
 EOM
-	ENTERCORRECTLY=0
-	while [ $ENTERCORRECTLY -ne 1 ]
-	do
-		read -e -p 'Enter path for Rootfs Partition : ' ROOTFSUSERFILEPATH
-		echo ""
-		ENTERCORRECTLY=1
-		if [ -f $ROOTFSUSERFILEPATH ]
-		then
-			echo "File exists"
-			echo ""
-		elif [ -d $ROOTFSUSERFILEPATH ]
-		then
-			echo "This directory contains:"
-			ls $ROOTFSUSERFILEPATH
-			echo ""
-			read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
-				case $ISRIGHTPATH in
-				"y") ;;
-				"n") ENTERCORRECTLY=0;;
-				*)  echo "Please enter y or n";ENTERCORRECTLY=0;;
-				esac
+    ENTERCORRECTLY=0
+    while [ $ENTERCORRECTLY -ne 1 ]
+    do
+        read -e -p 'Enter path for Rootfs Partition : ' ROOTFSUSERFILEPATH
+        echo ""
+        ENTERCORRECTLY=1
+        if [ -f $ROOTFSUSERFILEPATH ]
+        then
+            echo "File exists"
+            echo ""
+        elif [ -d $ROOTFSUSERFILEPATH ]
+        then
+            echo "This directory contains:"
+            ls $ROOTFSUSERFILEPATH
+            echo ""
+            read -p 'Is this correct? [y/n] : ' ISRIGHTPATH
+                case $ISRIGHTPATH in
+                "y") ;;
+                "n") ENTERCORRECTLY=0;;
+                *)  echo "Please enter y or n";ENTERCORRECTLY=0;;
+                esac
 
-		else
-			echo "Invalid path make sure to include complete path"
+        else
+            echo "Invalid path make sure to include complete path"
 
-			ENTERCORRECTLY=0
-		fi
-	done
-	echo ""
-
-
-	# Check if user entered a tar or not for Boot
-	ISBOOTTAR=`ls $BOOTUSERFILEPATH | grep .tar.gz | awk {'print $1'}`
-	if [ -n "$ISBOOTTAR" ]
-	then
-		BOOTPATHOPTION=2
-	else
-		BOOTPATHOPTION=1
-		BOOTFILEPATH=$BOOTUSERFILEPATH
-		MLO=`ls $BOOTFILEPATH | grep MLO | awk {'print $1'}`
-		BOOTIMG=`ls $BOOTFILEPATH | grep u-boot | grep .img | awk {'print $1'}`
-		BOOTBIN=`ls $BOOTFILEPATH | grep u-boot | grep .bin | awk {'print $1'}`
-		BOOTUENV=`ls $BOOTFILEPATH | grep uEnv.txt | awk {'print $1'}`
-	fi
+            ENTERCORRECTLY=0
+        fi
+    done
+    echo ""
 
 
-	if [ "$KERNELFILESOPTION" == "2" ]
-	then
-		KERNELIMAGE=`ls $KERNELUSERFILEPATH | grep [uz]Image | awk {'print $1'}`
-		DTFILES=`ls $KERNELUSERFILEPATH | grep .dtb$ | awk {'print $1'}`
-	fi
+    # Check if user entered a tar or not for Boot
+    ISBOOTTAR=`ls $BOOTUSERFILEPATH | grep .tar.gz | awk {'print $1'}`
+    if [ -n "$ISBOOTTAR" ]
+    then
+        BOOTPATHOPTION=2
+    else
+        BOOTPATHOPTION=1
+        BOOTFILEPATH=$BOOTUSERFILEPATH
+        MLO=`ls $BOOTFILEPATH | grep MLO | awk {'print $1'}`
+        BOOTIMG=`ls $BOOTFILEPATH | grep u-boot | grep .img | awk {'print $1'}`
+        BOOTBIN=`ls $BOOTFILEPATH | grep u-boot | grep .bin | awk {'print $1'}`
+        BOOTUENV=`ls $BOOTFILEPATH | grep uEnv.txt | awk {'print $1'}`
+    fi
 
 
-	#Check if user entered a tar or not for Rootfs
-	ISROOTFSTAR=`ls $ROOTFSUSERFILEPATH | grep .tar.gz | awk {'print $1'}`
-	if [ -n "$ISROOTFSTAR" ]
-	then
-		ROOTFSPATHOPTION=2
-	else
-		ROOTFSPATHOPTION=1
-		ROOTFSFILEPATH=$ROOTFSUSERFILEPATH
-	fi
+    if [ "$KERNELFILESOPTION" == "2" ]
+    then
+        KERNELIMAGE=`ls $KERNELUSERFILEPATH | grep [uz]Image | awk {'print $1'}`
+        DTFILES=`ls $KERNELUSERFILEPATH | grep .dtb$ | awk {'print $1'}`
+    fi
+
+
+    #Check if user entered a tar or not for Rootfs
+    ISROOTFSTAR=`ls $ROOTFSUSERFILEPATH | grep .tar.gz | awk {'print $1'}`
+    if [ -n "$ISROOTFSTAR" ]
+    then
+        ROOTFSPATHOPTION=2
+    else
+        ROOTFSPATHOPTION=1
+        ROOTFSFILEPATH=$ROOTFSUSERFILEPATH
+    fi
 fi
 
 cat << EOM
 ################################################################################
 
-	Copying files now... will take minutes
+    Copying files now... will take minutes
 
 ################################################################################
 
@@ -1023,40 +1016,40 @@ EOM
 
 if [ $BOOTPATHOPTION -eq 1 ] ; then
 
-	echo ""
-	#copy boot files out of board support
-	if [ "$MLO" != "" ] ; then
-		cp $BOOTFILEPATH/$MLO $PATH_TO_SDBOOT/MLO
-		echo "MLO copied"
-	else
-		echo "MLO file not found"
-	fi
+    echo ""
+    #copy boot files out of board support
+    if [ "$MLO" != "" ] ; then
+        cp $BOOTFILEPATH/$MLO $PATH_TO_SDBOOT/MLO
+        echo "MLO copied"
+    else
+        echo "MLO file not found"
+    fi
 
-	echo ""
+    echo ""
 
-	echo ""
+    echo ""
 
-	if [ "$BOOTIMG" != "" ] ; then
-		cp $BOOTFILEPATH/$BOOTIMG $PATH_TO_SDBOOT/u-boot.img
-		echo "u-boot.img copied"
-	elif [ "$BOOTBIN" != "" ] ; then
-		cp $BOOTFILEPATH/$BOOTBIN $PATH_TO_SDBOOT/u-boot.bin
-		echo "u-boot.bin copied"
-	else
-		echo "No U-Boot file found"
-	fi
+    if [ "$BOOTIMG" != "" ] ; then
+        cp $BOOTFILEPATH/$BOOTIMG $PATH_TO_SDBOOT/u-boot.img
+        echo "u-boot.img copied"
+    elif [ "$BOOTBIN" != "" ] ; then
+        cp $BOOTFILEPATH/$BOOTBIN $PATH_TO_SDBOOT/u-boot.bin
+        echo "u-boot.bin copied"
+    else
+        echo "No U-Boot file found"
+    fi
 
-	echo ""
+    echo ""
 
-	if [ "$BOOTUENV" != "" ] ; then
-		cp $BOOTFILEPATH/$BOOTUENV $PATH_TO_SDBOOT/uEnv.txt
-		echo "uEnv.txt copied"
-	fi
+    if [ "$BOOTUENV" != "" ] ; then
+        cp $BOOTFILEPATH/$BOOTUENV $PATH_TO_SDBOOT/uEnv.txt
+        echo "uEnv.txt copied"
+    fi
 
 elif [ $BOOTPATHOPTION -eq 2  ] ; then
-	untar_progress $BOOTUSERFILEPATH $PATH_TO_TMP_DIR
-	cp -rf $PATH_TO_TMP_DIR/* $PATH_TO_SDBOOT
-	echo ""
+    untar_progress $BOOTUSERFILEPATH $PATH_TO_TMP_DIR
+    cp -rf $PATH_TO_TMP_DIR/* $PATH_TO_SDBOOT
+    echo ""
 
 fi
 
@@ -1065,11 +1058,44 @@ sync
 
 echo "Copying rootfs System partition"
 if [ $ROOTFSPATHOPTION -eq 1 ] ; then
-	TOTALSIZE=`sudo du -c $ROOTFSUSERFILEPATH/* | grep total | awk {'print $1'}`
-	sudo cp -r $ROOTFSUSERFILEPATH/* $PATH_TO_SDROOTFS & cp_progress $TOTALSIZE $PATH_TO_SDROOTFS
+    TOTALSIZE=`sudo du -c $ROOTFSUSERFILEPATH/* | grep total | awk {'print $1'}`
+    sudo cp -r $ROOTFSUSERFILEPATH/* $PATH_TO_SDROOTFS
 
 elif [ $ROOTFSPATHOPTION -eq 2  ] ; then
-	untar_progress $ROOTFSUSERFILEPATH $PATH_TO_SDROOTFS
+    untar_progress $ROOTFSUSERFILEPATH $PATH_TO_SDROOTFS
+fi
+
+if [ "$KERNELFILESOPTION" == "2" ]
+then
+
+    mkdir -p $PATH_TO_SDROOTFS/boot
+
+    if [ "$KERNELIMAGE" != "" ] ; then
+
+        CLEANKERNELNAME=`ls "$BOOTFILEPATH/$KERNELIMAGE" | grep -o [uz]Image`
+        cp -f ${BOOTFILEPATH}$KERNELIMAGE $PATH_TO_SDROOTFS/boot/$CLEANKERNELNAME
+        cp -f ${BOOTFILEPATH}$KERNELIMAGE $PATH_TO_SDBOOT/$CLEANKERNELNAME
+        echo "Kernel image copied"
+    else
+        echo "$KERNELIMAGE file not found"
+    fi
+
+    COPYINGDTB="false"
+    for dtb in $DTFILES
+    do
+        if [ -f "$KERNELUSERFILEPATH/$dtb" ] ; then
+            cp -f ${KERNELUSERFILEPATH}$dtb $PATH_TO_SDROOTFS/boot
+            cp -f ${KERNELUSERFILEPATH}$dtb $PATH_TO_SDBOOT
+            echo "$dtb copied"
+            COPYINGDTB="true"
+        fi
+    done
+
+    if [ "$COPYINGDTB" == "false" ]
+    then
+        echo "No device tree files found"
+    fi
+
 fi
 
 echo ""
@@ -1083,37 +1109,6 @@ sync
 sync
 sync
 sync
-
-if [ "$KERNELFILESOPTION" == "2" ]
-then
-
-	mkdir -p $PATH_TO_SDROOTFS/boot
-
-	if [ "$KERNELIMAGE" != "" ] ; then
-
-		CLEANKERNELNAME=`ls "$BOOTFILEPATH/$KERNELIMAGE" | grep -o [uz]Image`
-		cp -f $KERNELUSERFILEPATH/$KERNELIMAGE $PATH_TO_SDROOTFS/boot/$CLEANKERNELNAME
-		echo "Kernel image copied"
-	else
-		echo "$KERNELIMAGE file not found"
-	fi
-
-	COPYINGDTB="false"
-	for dtb in $DTFILES
-	do
-		if [ -f "$KERNELUSERFILEPATH/$dtb" ] ; then
-			cp -f $KERNELUSERFILEPATH/$dtb $PATH_TO_SDROOTFS/boot
-			echo "$dtb copied"
-			COPYINGDTB="true"
-		fi
-	done
-
-	if [ "$COPYINGDTB" == "false" ]
-	then
-		echo "No device tree files found"
-	fi
-
-fi
 
 echo " "
 echo "Un-mount the partitions "
