@@ -1,0 +1,32 @@
+setenv bootcmd 'if mmc rescan ${mmcdev}; then if userbutton; then setenv bootenv user.txt;fi;echo SD/MMC found on device ${mmcdev};if run loadbootenv; then echo Loaded environment from ${bootenv};run importbootenv;fi;if test -n $uenvcmd; then echo Running uenvcmd ...;run uenvcmd;fi;if run loaduimage; then run mmcboot;fi;fi;run nandboot;'
+setenv bootdelay 1
+setenv bootenv 'uEnv.txt'
+setenv buddy none
+setenv camera none                                                                     
+setenv console 'ttyS2,115200n8'
+setenv defaultdisplay dvi
+setenv dieid# 4cb80004000000000403951c09010014
+setenv dvimode '640x480MR-16@60'
+setenv filesize 30E028
+setenv importbootenv 'echo Importing environment from mmc ...; env import -t $loadaddr $filesize'
+setenv loadaddr 0x80200000                                                             
+setenv loadbootenv 'fatload mmc ${mmcdev} ${loadaddr} ${bootenv}'
+setenv loadramdisk 'fatload mmc ${mmcdev} ${rdaddr} ramdisk.gz'
+setenv loaduimage 'ext2load mmc ${mmcdev}:2 ${loadaddr} /boot/uImage'
+setenv loaduimagefat 'fatload mmc ${mmcdev} ${loadaddr} uImage'
+setenv mmcargs 'setenv bootargs console=${console} ${optargs} mpurate=${mpurate} buddy=${buddy} camera=${camera} video=mxcfb0:dev=hdmi,1680x1050M@60,if=RGB24 root=${mmcroot} rootfstype=${mmcrootfstype}'
+setenv mmcboot 'echo Booting from mmc ...; run mmcargs; bootm ${loadaddr}'
+setenv mmcdev 0
+setenv mmcroot '/dev/mmcblk0p2 rw'
+setenv mmcrootfstype 'ext3 rootwait'
+setenv mpurate auto
+setenv mtddevname x-loader
+setenv mtddevnum 0
+setenv mtdids 'nand0=nand'
+setenv mtdparts 'mtdparts=nand:512k(x-loader),1920k(u-boot),128k(u-boot-env),4m(kernel),-(fs)'
+setenv nandargs 'setenv bootargs console=${console} ${optargs} mpurate=${mpurate} buddy=${buddy} camera=${camera} video=mxcfb0:dev=hdmi,1680x1050M@60,if=RGB24 root=${nandroot} rootfstype=${nandrootfstype}'
+setenv nandboot 'echo Booting from nand ...; run nandargs; nand read ${loadaddr} 280000 400000; bootm ${loadaddr}'
+setenv nandroot 'ubi0:beagleboard-rootfs ubi.mtd=4'
+setenv nandrootfstype ubifs
+setenv partition 'nand0,0'
+setenv ramargs 'setenv boot'
